@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstracBasetUser
+from django.contrib.auth.models import AbstractBaseUser
 
-class CustomUser(AbstracBasetUser):
+class CustomUser(AbstractBaseUser):
     pass
