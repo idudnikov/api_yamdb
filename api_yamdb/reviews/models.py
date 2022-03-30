@@ -8,3 +8,8 @@ class Category(models.Model):
 
     def __str__(self):
         return self.slug
+
+
+class Genre(models.Model):
+    name = models.CharField('Наименование жанра', max_length=256)
+    slug = models.SlugField('Slug жанра', unique=True)
