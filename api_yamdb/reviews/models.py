@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator
-from ..users.models import CustomUser
+from users.models import CustomUser
 
 
 class Category(models.Model):
@@ -13,8 +13,12 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField('Наименование жанра', max_length=256)
-    slug = models.SlugField('Slug жанра', unique=True)
+    name = models.CharField(_('Наименование жанра'), max_length=256)
+    slug = models.SlugField(_('Slug жанра'), unique=True)
+
+    class Meta:
+        verbose_name = _('Жанр')
+        verbose_name_plural = _('Жанры')
 
 
 class Title(models.Model):
@@ -29,6 +33,10 @@ class Title(models.Model):
         on_delete=models.DO_NOTHING
     )
 
+    class Meta:
+        verbose_name = _('Произведение')
+        verbose_name_plural = _('Произведения')
+
 
 class GenreTitle(models.Model):
     genre = models.ForeignKey(
@@ -40,55 +48,51 @@ class GenreTitle(models.Model):
         on_delete=models.DO_NOTHING
     )
 
-    class Meta:
-        verbose_name = 'Жанр'
-        verbose_name_plural = 'Жанры'
-
 
 class Review(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        verbose_name='Произведение'
+        verbose_name=_('Произведение')
     )
-    text = models.TextField('Текст отзыва')
+    text = models.TextField(_('Текст отзыва'))
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        verbose_name='Автор отзыва'
+        verbose_name=_('Автор отзыва')
     )
     score = models.IntegerField(
-        'Оценка',
+        _('Оценка'),
         validators=[
             MinValueValidator(1),
             MaxValueValidator(10)
         ]
     )
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True
+        _('Дата добавления'), auto_now_add=True
     )
 
     class Meta:
-        verbose_name = 'Отзыв'
-        verbose_name_plural = 'Отзывы'
+        verbose_name = _('Отзыв')
+        verbose_name_plural = _('Отзывы')
 
 
 class Comment(models.Model):
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        verbose_name='Автор комментария'
+        verbose_name=_('Автор комментария')
     )
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        verbose_name='Отзыв'
+        verbose_name=_('Отзыв')
     )
-    text = models.TextField('Текст комментария')
+    text = models.TextField(_('Текст комментария'))
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True
+        _('Дата добавления'), auto_now_add=True
     )
 
     class Meta:
-        verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
+        verbose_name = _('Комментарий')
+        verbose_name_plural = _('Комментарии')
