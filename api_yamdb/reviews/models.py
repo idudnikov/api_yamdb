@@ -5,20 +5,24 @@ from users.models import CustomUser
 
 
 class Category(models.Model):
-    name = models.CharField(_('Имя категории'), max_length=256)
-    slug = models.SlugField(_('Slug категории'), unique=True, max_length=50)
+    name = models.CharField(
+        _('Имя категории'), max_length=256, blank=False)
+    slug = models.SlugField(
+        _('Slug категории'), unique=True, max_length=50, blank=False)
 
     class Meta:
         verbose_name = _('Категория')
         verbose_name_plural = _('Категории')
 
     def __str__(self):
-        return self.slug
+        return self.name
 
 
 class Genre(models.Model):
-    name = models.CharField(_('Наименование жанра'), max_length=256)
-    slug = models.SlugField(_('Slug жанра'), unique=True)
+    name = models.CharField(
+        _('Имя жанра'), max_length=256, blank=False)
+    slug = models.SlugField(
+        _('Slug жанра'), unique=True)
 
     class Meta:
         verbose_name = _('Жанр')
@@ -27,17 +31,13 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(_('Название'), max_length=200, blank=False)
-    year = models.DateTimeField(
-        _('Год выпуска'), auto_now_add=True, blank=False)
+    year = models.IntegerField(_('Год выпуска'), blank=False)
     description = models.CharField(_('Описание'), max_length=200)
     rating = models.IntegerField(_('Рейтинг'), null=True)
     genre = models.ManyToManyField(
         Genre, through='GenreTitle', blank=False)
     category = models.ForeignKey(
-        Category,
-        on_delete=models.DO_NOTHING,
-        blank=False
-    )
+        Category, on_delete=models.DO_NOTHING, blank=False)
 
     class Meta:
         verbose_name = _('Произведение')
@@ -45,14 +45,8 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    genre = models.ForeignKey(
-        Genre,
-        on_delete=models.DO_NOTHING
-    )
-    title = models.ForeignKey(
-        Title,
-        on_delete=models.DO_NOTHING
-    )
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
 
 class Review(models.Model):
