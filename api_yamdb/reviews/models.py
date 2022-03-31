@@ -1,6 +1,7 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MaxValueValidator, MinValueValidator
+
 from users.models import CustomUser
 
 
@@ -10,6 +11,10 @@ class Category(models.Model):
 
     def __str__(self):
         return self.slug
+
+    class Meta:
+        verbose_name = _('Категория')
+        verbose_name_plural = _('Категории')
 
 
 class Genre(models.Model):
@@ -23,7 +28,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(_('Название'), max_length=200, blank=False)
-    year = models.DateTimeField(_('Год выпуска'), auto_now_add=True)
+    year = models.IntegerField(_('Год выпуска'))
     rating = models.IntegerField(_('Рейтинг'), null=True)
     description = models.CharField(_('Описание'), max_length=200)
     genre = models.ManyToManyField(Genre,
@@ -47,6 +52,10 @@ class GenreTitle(models.Model):
         Title,
         on_delete=models.DO_NOTHING
     )
+
+    class Meta:
+        verbose_name = _('Жанр-произведение')
+        verbose_name_plural = _('Жанры-произведения')
 
 
 class Review(models.Model):
