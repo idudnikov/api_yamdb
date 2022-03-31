@@ -5,7 +5,7 @@ from .enums import Role
 class CustomUserManager(BaseUserManager):
     """Class Custom manager."""
 
-    def create_user(self, email, username):
+    def create_user(self, email, username, password=None):
         if username is None:
             raise TypeError("Users must have a username.")
 
@@ -13,6 +13,7 @@ class CustomUserManager(BaseUserManager):
             raise TypeError("Users must have an email address.")
 
         user = self.model(username=username, email=self.normalize_email(email))
+        user.set_password(password)
         user.save()
         return user
 
