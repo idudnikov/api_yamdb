@@ -16,7 +16,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class EmailConfirmationViewSet(viewsets.ModelViewSet):
-    """"Class EmailConfirmationViewSet."""
+    """Class EmailConfirmationViewSet."""
 
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
@@ -30,13 +30,13 @@ class EmailConfirmationViewSet(viewsets.ModelViewSet):
                 'Hello',
                 f'This is your confirmation code: {confirmation_code}',
                 'YaMDB@yandex.ru',
-                [serializer.validated_data.get('email')] 
+                [serializer.validated_data.get('email')]
             )
             email.send()
             serializer.save()
             # add confirmation code to CustomUser model
             CustomUser.objects.filter(
                 username=serializer.validated_data.get('username')
-            ).update(confirmation_code=confirmation_code)            
-            return Response(serializer.data, status=status.HTTP_201_CREATED) 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+            ).update(confirmation_code=confirmation_code)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

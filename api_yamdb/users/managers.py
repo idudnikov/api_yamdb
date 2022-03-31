@@ -2,6 +2,7 @@ from django.contrib.auth.models import BaseUserManager
 
 from .enums import Role
 
+
 class CustomUserManager(BaseUserManager):
     """Class Custom manager."""
 

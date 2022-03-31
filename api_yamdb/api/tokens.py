@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import CustomUser
 
+
 class TokenSerializer(serializers.ModelSerializer):
     """Class TokenSerializer."""
 
@@ -31,7 +32,7 @@ class TokenSerializer(serializers.ModelSerializer):
         return data
 
 
-class TokenVeiwAPI(APIView):
+class TokenViewAPI(APIView):
     """Class TokenAPI."""
 
     permission_classes = [permissions.AllowAny]
