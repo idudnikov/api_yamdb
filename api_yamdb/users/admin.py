@@ -1,17 +1,16 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.utils.translation import gettext, gettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .models import CustomUser
 
-class CustomUserAdmin(UserAdmin):
-    model = CustomUser
-    fieldsets = (
-        (None, {'fields': ('username', 'password', 'email')}),
-        (_('Personal info'), {'fields': ('first_name', 'last_name')}),
-        (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'confirmation_code'),
-        }),
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'username',
+        'email',
+        'role',
+        'is_active',
+        'is_staff',
     )
     ordering = ('username',)
 
