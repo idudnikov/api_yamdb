@@ -9,7 +9,7 @@ from .enums import Role
 
 
 
-class CustomUser(AbstractBaseUser):
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     """Class CustomUser."""
 
     username = models.CharField(_('username'), max_length=150, unique=True)
@@ -17,7 +17,7 @@ class CustomUser(AbstractBaseUser):
     password = models.CharField(max_length=128,blank=True, null=True)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
-    bio = models.TextField(black=True)
+    bio = models.TextField(blank=True)
     role = models.CharField(
         max_length=10,
         choices=[(tag.name, tag.value) for tag in Role],
@@ -29,7 +29,7 @@ class CustomUser(AbstractBaseUser):
     confirmation_code = models.CharField(max_length=128,blank=True, null=True)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['username', 'email']
+    REQUIRED_FIELDS = ['email']
 
     objects = CustomUserManager()
 
