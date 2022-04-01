@@ -18,8 +18,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     bio = models.TextField(blank=True)
     role = models.CharField(
         max_length=10,
-        choices=[(tag.name, tag.value) for tag in Role],
-        default=Role.USER
+        choices=Role.choices(),
+        default=Role.USER.value
     )
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -33,3 +33,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
