@@ -1,28 +1,36 @@
 from django.core.mail import EmailMessage
 from rest_framework import serializers
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import CreateModelMixin
 from uuid import uuid4
 
 from users.models import CustomUser
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class CreateCustomUserSerializer(serializers.ModelSerializer):
     """Class CustomUserSerializer."""
 
     class Meta:
         model = CustomUser
         fields = ('username', 'email',)
 
+    def validate(self, data):
+        if data['username'] == 'me':
+            raise serializers.ValidationError(
+                {"Wrong username": "User 'me' can not be created."}
+            )
+        return data
 
-class EmailConfirmationViewSet(viewsets.ModelViewSet):
+
+class EmailConfirmationViewSet(CreateModelMixin, GenericAPIView):
     """Class EmailConfirmationViewSet."""
 
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+    serializer_class = CreateCustomUserSerializer
 
-    def create(self, request):
-        serializer = CustomUserSerializer(data=request.data)
+    def post(self, request):
+        serializer = CreateCustomUserSerializer(data=request.data)
         if serializer.is_valid():
             confirmation_code = uuid4()
             # send email
@@ -40,3 +48,7 @@ class EmailConfirmationViewSet(viewsets.ModelViewSet):
             ).update(confirmation_code=confirmation_code)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#{
+# user2   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ4NzkwODQzLCJpYXQiOjE2NDg3OTA1NDMsImp0aSI6ImFhOWMyZDY3YzBjMzRhNTc5ODgzNDc5OTM5Y2E1YjI3IiwidXNlcl9pZCI6MTA3fQ.Xs0nk-CqNMTTVUfTa68tpOGe6goUty38W3qQ_x3BMjo"
+#}
