@@ -1,16 +1,25 @@
 from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
+
+ERROR_MESSAGES = {
+    'update_denied': 'Изменение чужого контента запрещено!',
+    'delete_denied': 'Удаление чужого контента запрещено!'
+}
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return (request.user.is_authenticated or
-                request.method in permissions.SAFE_METHODS)
+        return (request.user.is_authenticated
+                or request.method in permissions.SAFE_METHODS)
 
     def has_object_permission(self, request, view, obj):
-        if obj.author == request.user:
-            return True
-        return False
+        if obj.author != request.user:
+            if request.method in ['PUT', 'PATCH']:
+                raise PermissionDenied(ERROR_MESSAGES['update_denied'])
+            if request.method in ['DELETE']:
+                raise PermissionDenied(ERROR_MESSAGES['delete_denied'])
+        return True
 
 
 class IsModerator(permissions.BasePermission):
@@ -20,6 +29,13 @@ class IsModerator(permissions.BasePermission):
             return True
         return False
 
+    def has_object_permission(self, request, view, obj):
+        if obj.author != request.user:
+            if request.method in ['PUT', 'PATCH']:
+                raise PermissionDenied(ERROR_MESSAGES['update_denied'])
+            return True
+        return True
+
 
 class IsAdmin(permissions.BasePermission):
 
@@ -27,3 +43,6 @@ class IsAdmin(permissions.BasePermission):
         if request.user.is_authenticated and request.user.role == 'admin':
             return True
         return False
+
+    def has_object_permission(self, request, view, obj):
+        return True
