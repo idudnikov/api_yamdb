@@ -18,10 +18,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-    class Meta:
-        verbose_name = _('Категория')
-        verbose_name_plural = _('Категории')
-
 
 class Genre(models.Model):
     name = models.CharField(
@@ -36,7 +32,6 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(_('Название'), max_length=200, blank=False)
-    rating = models.IntegerField(_('Рейтинг'), null=True)
     year = models.IntegerField(_('Год выпуска'), blank=False)
     description = models.CharField(_('Описание'), max_length=200)
     rating = models.IntegerField(_('Рейтинг'), null=True)
