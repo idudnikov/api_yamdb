@@ -1,0 +1,17 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div>
+    <fieldset class="module aligned ">
+        <div class="form-row field-name">
+            <div>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit">Загрузить файл</button>
+                </form>
+            </div>
+        </div>
+    </fieldset>
+</div>
+{% endblock content %}
