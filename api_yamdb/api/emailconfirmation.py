@@ -7,7 +7,7 @@ from uuid import uuid4
 from users.models import CustomUser
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class CreateCustomUserSerializer(serializers.ModelSerializer):
     """Class CustomUserSerializer."""
 
     class Meta:
@@ -19,10 +19,10 @@ class EmailConfirmationViewSet(viewsets.ModelViewSet):
     """"Class EmailConfirmationViewSet."""
 
     queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+    serializer_class = CreateCustomUserSerializer
 
-    def create(self, request):
-        serializer = CustomUserSerializer(data=request.data)
+    def post(self, request):
+        serializer = CreateCustomUserSerializer(data=request.data)
         if serializer.is_valid():
             confirmation_code = uuid4()
             # send email
@@ -37,6 +37,6 @@ class EmailConfirmationViewSet(viewsets.ModelViewSet):
             # add confirmation code to CustomUser model
             CustomUser.objects.filter(
                 username=serializer.validated_data.get('username')
-            ).update(confirmation_code=confirmation_code)            
+            ).update(confirmation_code=confirmation_code)
             return Response(serializer.data, status=status.HTTP_201_CREATED) 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
