@@ -36,24 +36,35 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True)
-    category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        read_only=False,
+        queryset=Category.objects.all()
+    )
+    genre = serializers.SlugRelatedField(
+        many=True,
+        slug_field='slug',
+        read_only=False,
+        queryset=Genre.objects.all(),
+    )
+    rating = serializers.SerializerMethodField(read_only=True, )
 
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'rating',
                   'description', 'genre', 'category')
 
-    def validate(self, data):
-        if self.context['year'] > datetime.now().year:
+    def validate_year(self, value):
+        if value > datetime.now().year:
             raise serializers.ValidationError(
                 'Ошибка. Год создания произведения еще не наступил'
             )
-        return data
+        return value
 
-    def get_rating(self, obj):
-        rating = Review.objects.filter(title=obj).aggregate(Avg('score'))
+    def get_rating(self, title):
+        rating = Review.objects.filter(title=title).aggregate(Avg('score'))
+        if rating.get('score__avg') is None:
+            return None
         return int(rating.get('score__avg'))
 
 
@@ -87,5 +98,5 @@ class CommentSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
