@@ -14,11 +14,12 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('name', 'slug')
 
-    def validate(self, attrs):
+    def validate_slug(self, value):
         reg = re.compile('^[-a-zA-Z0-9_]+$')
-        if not reg.match(self.context['slug']):
+        if not reg.match(value):
             raise serializers.ValidationError(
                 'Такую комбинацию нельзя использовать в качестве slug')
+        return value
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -26,11 +27,12 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         fields = ('name', 'slug')
 
-    def validate(self, attrs):
+    def validate_slug(self, value):
         reg = re.compile('^[-a-zA-Z0-9_]+$')
-        if not reg.match(self.context['slug']):
+        if not reg.match(value):
             raise serializers.ValidationError(
                 'Такую комбинацию нельзя использовать в качестве slug')
+        return value
 
 
 class TitleSerializer(serializers.ModelSerializer):
