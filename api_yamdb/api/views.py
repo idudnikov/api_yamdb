@@ -4,7 +4,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 
-from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly
+from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, TitleSerializer,
                           UserSerializer)
@@ -21,7 +21,7 @@ class BaseViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsModerator, IsAdmin, IsOwnerOrReadOnly,)
+    permission_classes = (IsOwnerOrReadOnly,)
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
@@ -36,7 +36,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsModerator, IsAdmin, IsOwnerOrReadOnly,)
+    permission_classes = (IsOwnerOrReadOnly,)
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
@@ -54,7 +54,7 @@ class CategoryViewSet(BaseViewSet):
     serializer_class = CategorySerializer
     lookup_field = 'slug'
     pagination_class = LimitOffsetPagination
-
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class GenreViewSet(BaseViewSet):
@@ -64,18 +64,20 @@ class GenreViewSet(BaseViewSet):
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     pagination_class = LimitOffsetPagination
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     lookup_field = 'username'
+    permission_classes = (IsAdmin,)
 
     def get_queryset(self):
         if self.kwargs.get('username') == 'me':
