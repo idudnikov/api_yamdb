@@ -1,11 +1,12 @@
 import re
 from datetime import datetime
+from turtle import title
 
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import Category, Comment, Genre, Review, Title, GenreTitle
 from users.models import CustomUser
 
 
@@ -36,7 +37,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True)
+    genre = GenreSerializer(many=True, required=False)
     category = CategorySerializer()
     rating = serializers.SerializerMethodField()
 
@@ -56,6 +57,18 @@ class TitleSerializer(serializers.ModelSerializer):
         rating = Review.objects.filter(title=obj).aggregate(Avg('score'))
         return int(rating.get('score__avg'))
 
+    def create(self, validated_data):
+        if 'genre' not in self.initial_data:
+            title = Title.objects.create(**validated_data)
+            return title
+        genres = validated_data.pop('genre')
+        title = Title.objects.create(**validated_data)
+        for genre in genres:
+            current_genre = Genre.objects.get_or_create(
+                **genre)
+            GenreTitle.objects.get(
+                genre=current_genre, title=title)
+        return title
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(

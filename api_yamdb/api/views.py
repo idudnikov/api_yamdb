@@ -2,10 +2,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from reviews.models import Category, Comment, Genre, Review, Title
+from users.models import CustomUser
 
 from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer, TitleSerializer)
+                          GenreSerializer, ReviewSerializer, TitleSerializer,
+                          UserSerializer)
 
 
 class BaseViewSet(viewsets.ModelViewSet):
@@ -50,13 +52,30 @@ class CommentViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(BaseViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
 
 
 class GenreViewSet(BaseViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    lookup_field = 'slug'
 
 
-class TitleViewSet(BaseViewSet):
+class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+
+
+class UsersViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+    lookup_field = 'username'
+
+    def get_queryset(self):
+        if self.kwargs.get('username') == 'me':
+            name = self.request.user.username
+            new_queryset = get_object_or_404(CustomUser, username=name)
+            return new_queryset
+        else:
+            new_queryset = CustomUser.objects.filter(username=self.kwargs.get('username'))
+        new_queryset = CustomUser.objects.all()
+        return new_queryset
