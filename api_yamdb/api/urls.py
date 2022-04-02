@@ -3,24 +3,24 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .emailconfirmation import EmailConfirmationViewSet
-from .views import CommentViewSet, ReviewViewSet
-from api.tokens import TokenViewAPI
+from . import views
+from .tokens import TokenViewAPI
 
 app_name = 'api'
 
 router = DefaultRouter()
 
-router.register(r'users', CommentViewSet, basename='users')
-router.register(r'categories', CommentViewSet, basename='categories')
-router.register(r'genres', CommentViewSet, basename='genres')
-router.register(r'titles', CommentViewSet, basename='titles')
+router.register(r'users', views.CommentViewSet, basename='users')
+router.register(r'categories', views.CategoryViewSet, basename='categories')
+router.register(r'genres', views.GenreViewSet, basename='genres')
+router.register(r'titles', views.TitleViewSet, basename='titles')
 router.register(
     r'titles/(?P<title_id>[0-9]+)/reviews',
-    ReviewViewSet,
+    views.ReviewViewSet,
     basename='reviews')
 router.register(
     r'titles/(?P<title_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/comments',
-    CommentViewSet,
+    views.CommentViewSet,
     basename='comments')
 
 urlpatterns = [

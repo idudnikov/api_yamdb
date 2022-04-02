@@ -1,8 +1,11 @@
+import re
+from datetime import datetime
+
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from datetime import datetime
-from reviews.models import Category, Genre, Title, Review, Comment
 
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 
 
@@ -11,20 +14,34 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('name', 'slug')
 
+    def validate(self, attrs):
+        reg = re.compile('^[-a-zA-Z0-9_]+$')
+        if not reg.match(self.context['slug']):
+            raise serializers.ValidationError(
+                'Такую комбинацию нельзя использовать в качестве slug')
+
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
 
+    def validate(self, attrs):
+        reg = re.compile('^[-a-zA-Z0-9_]+$')
+        if not reg.match(self.context['slug']):
+            raise serializers.ValidationError(
+                'Такую комбинацию нельзя использовать в качестве slug')
+
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer()
+    genre = GenreSerializer(many=True)
     category = CategorySerializer()
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        fields = ('name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category')
 
     def validate(self, data):
         if self.context['year'] > datetime.now().year:
@@ -32,6 +49,10 @@ class TitleSerializer(serializers.ModelSerializer):
                 'Ошибка. Год создания произведения еще не наступил'
             )
         return data
+
+    def get_rating(self, obj):
+        rating = Review.objects.filter(title=obj).aggregate(Avg('score'))
+        return int(rating.get('score__avg'))
 
 
 class ReviewSerializer(serializers.ModelSerializer):
