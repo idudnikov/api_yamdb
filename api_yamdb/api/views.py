@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
+
 from rest_framework.pagination import LimitOffsetPagination
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 
-from .permissions import IsAdmin, IsOwnerOrReadOnly, ReadOnly, IsModerator
+from .permissions import IsAdmin, IsOwnerOrReadOnly, ReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, TitleSerializer,
                           UserSerializer)
@@ -64,6 +65,10 @@ class GenreViewSet(BaseViewSet):
     serializer_class = GenreSerializer
     lookup_field = 'slug'
     search_fields = ('__name',)
+
+    def retrieve(self, request, *args, **kwargs):
+        return status.HTTP_405_METHOD_NOT_ALLOWED
+
 
 
 class TitleViewSet(BaseViewSet):
