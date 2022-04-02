@@ -19,7 +19,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(
         max_length=10,
         choices=Role.choices(),
-        default=Role.USER.value
+        default=Role.user.value
     )
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -37,7 +37,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     @property
     def user__username(self):
         return self.user.username
-    
+
     def __unicode__(self):
         return self.user.username
 

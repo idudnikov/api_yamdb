@@ -5,7 +5,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 
-from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly
+from .permissions import IsAdmin, IsOwnerOrReadOnly, ReadOnly, IsModerator
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, TitleSerializer,
                           UserSerializer)
@@ -55,12 +55,14 @@ class CommentViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(BaseViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
     search_fields = ('__name',)
 
 
 class GenreViewSet(BaseViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    lookup_field = 'slug'
     search_fields = ('__name',)
 
 

@@ -11,6 +11,6 @@ class ChoiceEnum(Enum):
 class Role(ChoiceEnum):
     """Class Role(enum)."""
 
-    USER = 'user'
-    MODERATOR = 'moderator'
-    ADMIN = 'admin'
+    user = 'user'
+    moderator = 'moderator'
+    admin = 'admin'

@@ -26,6 +26,6 @@ class CustomUserManager(BaseUserManager):
         user = self.create_user(email, username, password, **args)
         user.is_superuser = True
         user.is_staff = True
-        user.role = Role.ADMIN.value
+        user.role = Role.admin.value
         user.save()
         return user

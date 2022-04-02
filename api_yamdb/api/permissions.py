@@ -14,7 +14,6 @@ class ReadOnly(permissions.BasePermission):
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
-
     def has_permission(self, request, view):
         return (request.user.is_authenticated
                 or request.method in permissions.SAFE_METHODS)
@@ -29,7 +28,6 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
 
 class IsModerator(permissions.BasePermission):
-
     def has_permission(self, request, view):
         if request.user.is_authenticated and request.user.role == 'moderator':
             return True
@@ -44,7 +42,6 @@ class IsModerator(permissions.BasePermission):
 
 
 class IsAdmin(permissions.BasePermission):
-
     def has_permission(self, request, view):
         if request.user.is_authenticated and request.user.role == 'admin':
             return True

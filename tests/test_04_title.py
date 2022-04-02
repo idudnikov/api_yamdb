@@ -162,6 +162,7 @@ class Test04TitleAPI:
             'Проверьте, что при GET запросе `/api/v1/titles/{title_id}/` возвращаете данные объекта. '
             'Значение `id` нет или не является целым числом.'
         )
+        data.get('category')
         assert data.get('category') == categories[0], (
             'Проверьте, что при GET запросе `/api/v1/titles/{title_id}/` возвращаете данные объекта. '
             'Значение `category` неправильное.'
