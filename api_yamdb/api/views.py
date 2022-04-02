@@ -5,8 +5,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 
-from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly, \
-    IsAdminOrReadOnly
+from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, TitleSerializer,
                           UserSerializer)
