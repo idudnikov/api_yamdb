@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework import status, permissions
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.generics import GenericAPIView
@@ -27,7 +27,7 @@ class TokenSerializer(serializers.ModelSerializer):
         if not user.exists():
             raise serializers.ValidationError(
                 {"Wrong username or confirmation code":
-                 "Please input correct data."}
+                     "Please input correct data."}
             )
         return data
 
@@ -36,7 +36,6 @@ class TokenViewAPI(GenericAPIView):
     """Class TokenAPI."""
 
     serializer_class = TokenSerializer
-    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
@@ -46,7 +45,6 @@ class TokenViewAPI(GenericAPIView):
                 confirmation_code=(
                     serializer.validated_data['confirmation_code']))
             token = AccessToken.for_user(user)
-        # refresh confirmation code for a new token request
             user.confirmation_code = uuid4()
             return Response(
                 {'token': str(token)},

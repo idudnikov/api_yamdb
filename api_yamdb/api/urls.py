@@ -24,9 +24,9 @@ router.register(
     basename='comments')
 
 urlpatterns = [
-    path('v1/', include(router.urls)),
+    path('v1/users/me/', views.UserMeView.as_view(), name='users_me'),
     path('v1/auth/token/', TokenViewAPI.as_view(), name='token_obtain_pair'),
-    path(
-        'v1/auth/signup/',
-        EmailConfirmationViewSet.as_view(), name='regist_user_conf_email'),
+    path('v1/auth/signup/', EmailConfirmationViewSet.as_view(),
+         name='regist_user_conf_email'),
+    path('v1/', include(router.urls)),
 ]
