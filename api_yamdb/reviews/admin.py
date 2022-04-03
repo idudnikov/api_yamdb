@@ -6,7 +6,6 @@ from django.shortcuts import redirect, render
 from django.urls import path
 
 from users.models import CustomUser
-
 from .models import Category, Comment, Genre, GenreTitle, Review, Title
 
 

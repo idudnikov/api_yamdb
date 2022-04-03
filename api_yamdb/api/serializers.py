@@ -35,17 +35,23 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.SlugRelatedField(
-        slug_field='slug',
-        read_only=False,
-        queryset=Category.objects.all()
-    )
-    genre = serializers.SlugRelatedField(
-        many=True,
-        slug_field='slug',
-        read_only=False,
-        queryset=Genre.objects.all(),
-    )
+    def __init__(self, *args, **kwargs):
+        super(TitleSerializer, self).__init__(*args, **kwargs)
+        if self.context['request'].method in ['POST', 'PATCH']:
+            self.fields['category'] = serializers.SlugRelatedField(
+                slug_field='slug',
+                read_only=False,
+                queryset=Category.objects.all()
+            )
+            self.fields['genre'] = serializers.SlugRelatedField(
+                many=True,
+                slug_field='slug',
+                read_only=False,
+                queryset=Genre.objects.all(),
+            )
+
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField(read_only=True, )
 
     class Meta:
@@ -75,6 +81,17 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
+
+    def validate(self, data):
+        super().validate(data)
+        if self.context['request'].method != 'POST':
+            return data
+        user = self.context['request'].user
+        title_id = self.context['request'].parser_context['kwargs']['title_id']
+        if Review.objects.filter(author=user, title__id=title_id).exists():
+            raise serializers.ValidationError(
+                "Вы уже оставили отзыв на данное произведение")
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

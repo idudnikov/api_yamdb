@@ -1,16 +1,15 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters, status, mixins
-
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import CustomUser
 
-from .permissions import IsAdmin, IsOwnerOrReadOnly, ReadOnly
+from users.models import CustomUser
+from .filters import TitleFilter
+from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, TitleSerializer,
                           UserSerializer)
@@ -25,7 +24,7 @@ class BaseViewSet(mixins.ListModelMixin,
     filter_backends = (filters.SearchFilter,)
 
     def get_permissions(self):
-        if self.action in ['list']:
+        if self.action == 'list':
             return (ReadOnly(),)
         return super().get_permissions()
 
@@ -34,6 +33,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (IsOwnerOrReadOnly,)
     pagination_class = LimitOffsetPagination
+
+    def get_permissions(self):
+        if self.action == 'destroy':
+            return (IsModerator(),)
+        return super().get_permissions()
 
     def get_queryset(self):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -46,9 +50,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_permissions(self):
+        if self.action == 'destroy':
+            return (IsModerator(),)
+        return super().get_permissions()
 
     def get_queryset(self):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
@@ -77,8 +87,9 @@ class GenreViewSet(BaseViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+    lookup_field = 'id'
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category', 'genre', 'name', 'year')
+    filterset_class = TitleFilter
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAdmin,)
 
@@ -95,16 +106,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
-
-    def get_permissions(self):
-        if self.kwargs.get('username') == 'me':
-            return (IsAuthenticated(),)
-        return super().get_permissions()
-
-    def get_queryset(self):
-        if self.kwargs.get('username') == 'me':
-            return CustomUser.objects.get(username=self.request.user)
-        return super().get_queryset()
 
 
 class UserMeView(APIView):

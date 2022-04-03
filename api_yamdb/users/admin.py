@@ -1,6 +1,6 @@
 from django.contrib import admin
-
 from reviews.admin import CustomAdmin
+
 from .models import CustomUser
 
 

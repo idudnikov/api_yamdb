@@ -1,10 +1,10 @@
+from uuid import uuid4
+
 from django.core.mail import EmailMessage
-from rest_framework import serializers
-from rest_framework import status
-from rest_framework.response import Response
+from rest_framework import serializers, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin
-from uuid import uuid4
+from rest_framework.response import Response
 
 from users.models import CustomUser
 
@@ -42,13 +42,8 @@ class EmailConfirmationViewSet(CreateModelMixin, GenericAPIView):
             )
             email.send()
             serializer.save()
-            # add confirmation code to CustomUser model
             CustomUser.objects.filter(
                 username=serializer.validated_data.get('username')
             ).update(confirmation_code=confirmation_code)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# {
-# user2   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ4NzkwODQzLCJpYXQiOjE2NDg3OTA1NDMsImp0aSI6ImFhOWMyZDY3YzBjMzRhNTc5ODgzNDc5OTM5Y2E1YjI3IiwidXNlcl9pZCI6MTA3fQ.Xs0nk-CqNMTTVUfTa68tpOGe6goUty38W3qQ_x3BMjo"
-# }

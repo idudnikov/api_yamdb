@@ -1,11 +1,12 @@
-from rest_framework import serializers
-from rest_framework import status
+from uuid import uuid4
+
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers, status
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.generics import GenericAPIView
-from uuid import uuid4
+
 from users.models import CustomUser
-from django.shortcuts import get_object_or_404
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -29,10 +30,10 @@ class TokenSerializer(serializers.ModelSerializer):
             username=username, confirmation_code=confirmation_code
         )
         if not user.exists():
-            raise serializers.ValidationError(
-                {"Wrong username or confirmation code":
-                     "Please input correct data."}
-            )
+            raise serializers.ValidationError({
+                "Wrong username or confirmation code":
+                    "Please input correct data."
+            })
         return data
 
 
