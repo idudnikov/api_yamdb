@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.generics import GenericAPIView
 from uuid import uuid4
-
 from users.models import CustomUser
+from django.shortcuts import get_object_or_404
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -17,6 +17,10 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['username', 'confirmation_code']
+
+    def validate_username(self, value):
+        get_object_or_404(CustomUser, username=value)
+        return value
 
     def validate(self, data):
         username = data['username']
@@ -39,14 +43,15 @@ class TokenViewAPI(GenericAPIView):
 
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             user = CustomUser.objects.get(
                 username=serializer.validated_data['username'],
                 confirmation_code=(
-                    serializer.validated_data['confirmation_code']))
+                    serializer.validated_data['confirmation_code'])
+            )
             token = AccessToken.for_user(user)
             user.confirmation_code = uuid4()
             return Response(
                 {'token': str(token)},
                 status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors)
