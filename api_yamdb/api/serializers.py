@@ -3,7 +3,6 @@ from datetime import datetime
 
 from django.db.models import Avg
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
@@ -76,13 +75,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=['author', 'title'],
-                message='Автор уже писал отзыв на данное произведение'
-            )
-        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):

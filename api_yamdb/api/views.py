@@ -16,13 +16,16 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           UserSerializer)
 
 
-class BaseViewSet(viewsets.ModelViewSet):
+class BaseViewSet(mixins.ListModelMixin,
+                  mixins.CreateModelMixin,
+                  mixins.DestroyModelMixin,
+                  viewsets.GenericViewSet):
     permission_classes = (IsAdmin,)
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list']:
             return (ReadOnly(),)
         return super().get_permissions()
 
@@ -44,8 +47,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsOwnerOrReadOnly,)
     pagination_class = LimitOffsetPagination
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
@@ -63,9 +66,6 @@ class CategoryViewSet(BaseViewSet):
     lookup_field = 'slug'
     search_fields = ('name',)
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status.HTTP_405_METHOD_NOT_ALLOWED)
-
 
 class GenreViewSet(BaseViewSet):
     queryset = Genre.objects.all()
@@ -73,15 +73,19 @@ class GenreViewSet(BaseViewSet):
     lookup_field = 'slug'
     search_fields = ('name',)
 
-    def retrieve(self, request, *args, **kwargs):
-        return self.http_method_not_allowed(request)
 
-
-class TitleViewSet(BaseViewSet):
+class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category', 'genre', 'name', 'year')
+    pagination_class = LimitOffsetPagination
+    permission_classes = (IsAdmin,)
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return (ReadOnly(),)
+        return super().get_permissions()
 
 
 class UsersViewSet(viewsets.ModelViewSet):
