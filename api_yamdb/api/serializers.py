@@ -1,8 +1,11 @@
 import re
 from datetime import datetime
 
+from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
@@ -109,3 +112,46 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+
+class CreateCustomUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'email',)
+
+    def validate(self, data):
+        if data['username'] == 'me':
+            raise serializers.ValidationError(
+                {"Wrong username": "User 'me' can not be created."}
+            )
+        return data
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    """Class TokenSerializer."""
+
+    username = serializers.CharField(write_only=True)
+    confirmation_code = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'confirmation_code']
+
+    def validate_username(self, value):
+        get_object_or_404(CustomUser, username=value)
+        return value
+
+    def validate(self, data):
+        username = data['username']
+        confirmation_code = data['confirmation_code']
+        user = get_object_or_404(CustomUser, username=username)
+        if not user:
+            raise serializers.ValidationError({
+                "Wrong username or confirmation code":
+                    "Please input correct data."
+            })
+        if not default_token_generator.check_token(user, confirmation_code):
+            raise serializers.ValidationError({
+                'confirmation_code': ['Invalid value']})
+        return data
