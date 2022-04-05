@@ -1,15 +1,16 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from reviews.models import Category, Comment, Genre, Review, Title
 
 from users.models import CustomUser
 from .filters import TitleFilter
-from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly
+from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly, \
+    IsAdminOrModerator
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, TitleSerializer,
                           UserSerializer)
@@ -36,7 +37,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'destroy':
-            return (IsModerator(),)
+            return (IsAdminOrModerator(),)
         return super().get_permissions()
 
     def get_queryset(self):
@@ -57,7 +58,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'destroy':
-            return (IsModerator(),)
+            return (IsAdminOrModerator(),)
         return super().get_permissions()
 
     def get_queryset(self):
@@ -107,26 +108,16 @@ class UsersViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
 
-
-class UserMeView(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request):
-        user = CustomUser.objects.get(username=request.user)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
-
-    def patch(self, request):
-        user = CustomUser.objects.get(username=self.request.user)
-        serializer = UserSerializer(data=request.data, instance=user,
-                                    partial=True)
-        role = self.request.user.role
-        if serializer.is_valid():
-            changed_role = serializer.validated_data.get('role')
-            if role == 'admin':
-                serializer.save()
-            if role != 'admin' and changed_role is not None:
-                serializer.validated_data['role'] = role
+    @action(methods=['patch', 'get'], detail=False,
+            permission_classes=(IsAuthenticated,),
+            url_path='me', url_name='users_me')
+    def me(self, request, *args, **kwargs):
+        user_instance = self.request.user
+        serializer = self.get_serializer(user_instance)
+        if self.request.method == 'PATCH':
+            serializer = self.get_serializer(data=request.data,
+                                             instance=user_instance,
+                                             partial=True)
+            serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status.HTTP_200_OK)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status.HTTP_200_OK)

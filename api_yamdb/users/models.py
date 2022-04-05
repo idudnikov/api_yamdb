@@ -35,11 +35,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.username
 
     @property
-    def user__username(self):
-        return self.user.username
+    def is_moderator(self):
+        return self.role == 'moderator'
 
-    def __unicode__(self):
-        return self.user.username
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
 
     class Meta:
         verbose_name = _('Пользователь')

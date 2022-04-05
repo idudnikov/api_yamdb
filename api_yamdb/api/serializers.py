@@ -8,30 +8,26 @@ from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class BaseSerializer(serializers.ModelSerializer):
+
+    def validate_slug(self, value):
+        reg = re.compile('^[-a-zA-Z0-9_]+$')
+        if not reg.match(value):
+            raise serializers.ValidationError(
+                'Такую комбинацию нельзя использовать в качестве slug')
+        return value
+
+
+class CategorySerializer(BaseSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
-    def validate_slug(self, value):
-        reg = re.compile('^[-a-zA-Z0-9_]+$')
-        if not reg.match(value):
-            raise serializers.ValidationError(
-                'Такую комбинацию нельзя использовать в качестве slug')
-        return value
 
-
-class GenreSerializer(serializers.ModelSerializer):
+class GenreSerializer(BaseSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
-
-    def validate_slug(self, value):
-        reg = re.compile('^[-a-zA-Z0-9_]+$')
-        if not reg.match(value):
-            raise serializers.ValidationError(
-                'Такую комбинацию нельзя использовать в качестве slug')
-        return value
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -74,24 +70,28 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super(ReviewSerializer, self).__init__(*args, **kwargs)
+        self.fields['title_id'].default = self.context[
+            'request'].parser_context.get('kwargs').get('title_id')
+        self.fields['author_id'].default = self.context[
+            'request'].user.id
+
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
+    title_id = serializers.HiddenField(default=None)
+    author_id = serializers.HiddenField(default=None)
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
-
-    def validate(self, data):
-        super().validate(data)
-        if self.context['request'].method != 'POST':
-            return data
-        user = self.context['request'].user
-        title_id = self.context['request'].parser_context['kwargs']['title_id']
-        if Review.objects.filter(author=user, title__id=title_id).exists():
-            raise serializers.ValidationError(
-                "Вы уже оставили отзыв на данное произведение")
-        return data
+        fields = ('id', 'title_id', 'author_id', 'text',
+                  'author', 'score', 'pub_date')
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=['author_id', 'title_id'])
+        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -109,3 +109,8 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+    def update(self, instance, validated_data):
+        if validated_data.get('role') is not None:
+            validated_data.pop('role')
+        return super().update(instance, validated_data)

@@ -29,7 +29,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
 class IsModerator(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_authenticated and request.user.role == 'moderator':
+        if request.user.is_authenticated and request.user.is_moderator:
             return True
         return False
 
@@ -43,9 +43,21 @@ class IsModerator(permissions.BasePermission):
 
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_authenticated and request.user.role == 'admin':
+        if request.user.is_authenticated and request.user.is_admin:
+            return True
+        return False
+
+
+class IsAdminOrModerator(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_authenticated and (request.user.is_moderator or
+                                              request.user.is_admin):
             return True
         return False
 
     def has_object_permission(self, request, view, obj):
+        if obj.author != request.user and request.user.is_moderator:
+            if request.method in ['PUT', 'PATCH']:
+                raise PermissionDenied(ERROR_MESSAGES['update_denied'])
+            return True
         return True
