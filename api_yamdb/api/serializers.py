@@ -33,24 +33,34 @@ class GenreSerializer(BaseSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super(TitleSerializer, self).__init__(*args, **kwargs)
-        if self.context['request'].method in ['POST', 'PATCH']:
-            self.fields['category'] = serializers.SlugRelatedField(
-                slug_field='slug',
-                read_only=False,
-                queryset=Category.objects.all()
-            )
-            self.fields['genre'] = serializers.SlugRelatedField(
-                many=True,
-                slug_field='slug',
-                read_only=False,
-                queryset=Genre.objects.all(),
-            )
-
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField(read_only=True, )
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category')
+
+    def get_rating(self, title):
+        rating = Review.objects.filter(title=title).aggregate(Avg('score'))
+        if rating.get('score__avg') is None:
+            return None
+        return int(rating.get('score__avg'))
+
+
+class CreateUpdateTitleSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        read_only=False,
+        queryset=Category.objects.all()
+    )
+    genre = serializers.SlugRelatedField(
+        many=True,
+        slug_field='slug',
+        read_only=False,
+        queryset=Genre.objects.all(),
+    )
 
     class Meta:
         model = Title
@@ -63,12 +73,6 @@ class TitleSerializer(serializers.ModelSerializer):
                 'Ошибка. Год создания произведения еще не наступил'
             )
         return value
-
-    def get_rating(self, title):
-        rating = Review.objects.filter(title=title).aggregate(Avg('score'))
-        if rating.get('score__avg') is None:
-            return None
-        return int(rating.get('score__avg'))
 
 
 class ReviewSerializer(serializers.ModelSerializer):
