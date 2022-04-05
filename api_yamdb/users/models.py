@@ -12,7 +12,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     username = models.CharField(_('username'), max_length=150, unique=True)
     email = models.EmailField(_('email address'), unique=True)
-    password = models.CharField(max_length=128, blank=True, null=True)
+    password = models.CharField(max_length=128, blank=True)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
     bio = models.TextField(blank=True)
@@ -24,7 +24,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
-    confirmation_code = models.CharField(max_length=128, blank=True, null=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']

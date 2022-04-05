@@ -1,18 +1,25 @@
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from reviews.models import Category, Comment, Genre, Review, Title
+from rest_framework_simplejwt.tokens import AccessToken
 
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 from .filters import TitleFilter
-from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly, ReadOnly, \
-    IsAdminOrModerator
+from .permissions import (IsAdmin, IsAdminOrModerator, IsOwnerOrReadOnly,
+                          ReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer, TitleSerializer,
+                          CreateCustomUserSerializer, GenreSerializer,
+                          ReviewSerializer, TitleSerializer, TokenSerializer,
                           UserSerializer)
 
 
@@ -121,3 +128,38 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
         return Response(serializer.data, status.HTTP_200_OK)
+
+
+class EmailConfirmationViewSet(CreateModelMixin, GenericAPIView):
+    serializer_class = CreateCustomUserSerializer
+
+    def post(self, request):
+        serializer = CreateCustomUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        user = get_object_or_404(
+            CustomUser,
+            username=serializer.validated_data.get('username'))
+        confirmation_code = default_token_generator.make_token(user)
+        send_mail(
+            'Hello',
+            f'This is your confirmation code: {confirmation_code}',
+            settings.EMAIL_FROM,
+            [serializer.validated_data.get('email')]
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TokenViewAPI(GenericAPIView):
+    serializer_class = TokenSerializer
+
+    def post(self, request):
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(
+            CustomUser,
+            username=serializer.validated_data['username'])
+        token = AccessToken.for_user(user)
+        return Response(
+            {'token': str(token)},
+            status=status.HTTP_201_CREATED)
