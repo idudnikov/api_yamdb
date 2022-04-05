@@ -106,11 +106,6 @@ class GenreViewSet(BaseViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    serializer_class = TitleSerializer
-    serializer_action_classes = {
-        "create": CreateUpdateTitleSerializer,
-        "partial_update": CreateUpdateTitleSerializer,
-    }
     queryset = Title.objects.all()
     lookup_field = "id"
     filter_backends = (DjangoFilterBackend,)
@@ -124,10 +119,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
     def get_serializer_class(self):
-        try:
-            return self.serializer_action_classes[self.action]
-        except (KeyError, AttributeError):
-            return super().get_serializer_class()
+        if self.action in ("create", "partial_update"):
+            return CreateUpdateTitleSerializer
+        return TitleSerializer
 
 
 class UsersViewSet(viewsets.ModelViewSet):
