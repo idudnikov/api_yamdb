@@ -37,7 +37,6 @@ class IsModerator(permissions.BasePermission):
         if obj.author != request.user:
             if request.method in ['PUT', 'PATCH']:
                 raise PermissionDenied(ERROR_MESSAGES['update_denied'])
-            return True
         return True
 
 
@@ -59,5 +58,4 @@ class IsAdminOrModerator(permissions.BasePermission):
         if obj.author != request.user and request.user.is_moderator:
             if request.method in ['PUT', 'PATCH']:
                 raise PermissionDenied(ERROR_MESSAGES['update_denied'])
-            return True
         return True

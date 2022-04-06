@@ -1,32 +1,34 @@
-import re
 from datetime import datetime
 
 from django.contrib.auth.tokens import default_token_generator
+from django.core.validators import RegexValidator
 from django.db.models import Avg
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 
 
-class BaseSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(validators=[
+        UniqueValidator(queryset=Category.objects.all()),
+        RegexValidator(regex='^[-a-zA-Z0-9_]+$')
+    ])
 
-    def validate_slug(self, value):
-        reg = re.compile('^[-a-zA-Z0-9_]+$')
-        if not reg.match(value):
-            raise serializers.ValidationError(
-                'Такую комбинацию нельзя использовать в качестве slug')
-        return value
-
-
-class CategorySerializer(BaseSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
 
-class GenreSerializer(BaseSerializer):
+class GenreSerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(validators=[
+        UniqueValidator(queryset=Genre.objects.all()),
+        RegexValidator(regex='^[-a-zA-Z0-9_]+$')
+    ])
+
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -144,8 +146,12 @@ class TokenSerializer(serializers.ModelSerializer):
         fields = ['username', 'confirmation_code']
 
     def validate_username(self, value):
-        get_object_or_404(CustomUser, username=value)
-        return value
+        try:
+            CustomUser.objects.filter(username=value).exists()
+        except CustomUser.DoesNotExist:
+            raise Http404
+        else:
+            return value
 
     def validate(self, data):
         username = data['username']

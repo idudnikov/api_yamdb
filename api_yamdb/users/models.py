@@ -30,6 +30,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
+    class Meta:
+        verbose_name = _('Пользователь')
+        verbose_name_plural = _('Пользователи')
+        ordering = ['-date_joined']
+
     def __str__(self):
         return self.username
 
@@ -41,7 +46,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def is_admin(self):
         return self.role == 'admin'
 
-    class Meta:
-        verbose_name = _('Пользователь')
-        verbose_name_plural = _('Пользователи')
-        ordering = ['-date_joined']
+
