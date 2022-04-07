@@ -72,28 +72,25 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super(ReviewSerializer, self).__init__(*args, **kwargs)
-        self.fields['title_id'].default = self.context[
-            'request'].parser_context.get('kwargs').get('title_id')
-        self.fields['author_id'].default = self.context[
-            'request'].user.id
 
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    title_id = serializers.HiddenField(default=None)
-    author_id = serializers.HiddenField(default=None)
 
     class Meta:
         model = Review
-        fields = ('id', 'title_id', 'author_id', 'text',
-                  'author', 'score', 'pub_date')
-        validators = [
-            serializers.UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=['author_id', 'title_id'])
-        ]
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+
+    def validate(self, data):
+        title_id = (
+            self.context["request"].parser_context["kwargs"].get("title_id"))
+        author = self.context["request"].user
+        current_title = get_object_or_404(Title, id=title_id)
+        if self.context["request"].method == "POST" and (
+           current_title.reviews.filter(author=author).exists()):
+            raise serializers.ValidationError(
+                "Review on this title already exists.")
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

@@ -19,7 +19,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(
         max_length=10,
         choices=Role.choices(),
-        default=Role.user.value
+        default=Role.user.name
     )
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -35,11 +35,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_moderator(self):
-        return self.role == 'moderator'
+        return self.role == Role.moderator.name
 
     @property
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role == Role.admin.name
 
     class Meta:
         verbose_name = _('Пользователь')

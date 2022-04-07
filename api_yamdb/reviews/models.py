@@ -61,13 +61,14 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        verbose_name=_('Произведение')
+        verbose_name=_('Произведение'),
+        related_name='reviews'
     )
     text = models.TextField(_('Текст отзыва'), blank=False)
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        verbose_name=_('Автор отзыва')
+        verbose_name=_('Автор отзыва'),
     )
     score = models.IntegerField(
         _('Оценка'),
