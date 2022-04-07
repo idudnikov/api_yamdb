@@ -45,5 +45,3 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     @property
     def is_admin(self):
         return self.role == Role.admin.name
-
-
