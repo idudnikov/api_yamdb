@@ -82,3 +82,7 @@
 `/users/{username}/` GET - получение пользователя по username PATCH - изменение данных пользователя по username DELETE - удаление пользователя по username
 
 `/users/me/` GET - получение данных своей учетной записи PATCH - изменение данных своей учетной записи
+
+В создании проекта также участвовали:
+https://github.com/deorz
+https://github.com/AndreyVnk
