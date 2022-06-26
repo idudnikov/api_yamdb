@@ -84,5 +84,5 @@
 `/users/me/` GET - получение данных своей учетной записи PATCH - изменение данных своей учетной записи
 
 В создании проекта также участвовали:
-https://github.com/deorz
+https://github.com/deorz<br/>
 https://github.com/AndreyVnk
