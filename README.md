@@ -9,7 +9,7 @@
 
 Клонируйте файлы проекта в локальное хранилище и перейдите в папку с проектом:
 
-`git clone https://github.com/GeneralMinimus/api_yamdb.git`
+`git clone https://github.com/idudnikov/api_yamdb.git`
 
 `cd api_yamdb`
 
